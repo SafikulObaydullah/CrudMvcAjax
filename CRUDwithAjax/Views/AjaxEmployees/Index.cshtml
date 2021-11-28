@@ -1,0 +1,174 @@
+﻿
+@{
+    ViewBag.Title = "CRUD Operation with Ajax";
+}
+
+<h1>All Emplyees</h1>
+<div>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Contact</th>
+                <th>Email</th>
+                <th>Address</th>
+                <th>..</th>
+            </tr>
+        </thead>
+        <tbody class="tbody">
+
+        </tbody>
+    </table>
+    <div>
+        <h2 id="h2"></h2>
+        <div>
+            <label>Id</label><br />
+            <input type="text" id="Id" disabled />
+        </div>
+        <div>
+            <label>Name</label><br />
+            <input type="text" id="txtName" />
+        </div>
+        <div>
+            <label>Contact</label><br />
+            <input type="text" id="Contact" />
+        </div>
+        <div>
+            <label>Email</label><br />
+            <input type="text" id="Email" />
+        </div>
+        <div>
+            <label>Address</label><br />
+            <input type="text" id="Address" />
+        </div>
+        <div>
+            <input type="button" value="Save" onclick="Save()" id="btnSave" />
+            <input type="button" value="Update" id="btnupdate" onclick="Update()" style="display:none" />
+
+        </div>
+    </div>
+</div>
+@section scripts{
+    <script>
+        $(document).ready(function () {
+            /*alert("Hello");*/
+            loadData();
+            
+            $("#h2").html("Add Employee")
+        })
+        function clearAll() {
+            $("#txtName").val('')
+            $("#Contact").val('')
+            $("#Email").val('')
+            $("#Address").val('')
+            $("#Id").val('')
+        }
+        function Edit(i) {
+            alert(i);
+            $.ajax({
+                url: "/AjaxEmployees/GetById/" + i,
+                type: "JSON",
+                method: "GET",
+                success: function (empList) {
+                    console.log(empList)
+                    if (empList != null) {
+                        $("#txtName").val(empList.Name)
+                        $("#Contact").val(empList.Contact)
+                        $("#Email").val(empList.Email)
+                        $("#Address").val(empList.Address)
+                        $("#Id").val(empList.Id)
+                    }
+                    else {
+                        alert("Record not found")
+                    }
+                },
+                error: function (er) {
+                    console.log(er.responseText);
+                }
+            })
+            $("#btnSave").hide();
+            $("#btnupdate").show();
+            $("#h2").html("Update Employee")
+        }
+        
+        function Save() {
+            $.ajax({
+                url: "/AjaxEmployees/Save",
+                type: "JSON",
+                method: "POST",
+                data: { Name: $("#txtName").val(), Email: $("#Email").val(), Contact: $("#Contact").val(), Address: $("#Address").val() },
+                success: function (empList) {
+                    console.log(empList)
+                    if (empList.Id > 0) {
+                        loadData();
+                        clearAll();
+                    }
+                },
+                error: function (er) {
+                    console.log(er.responseText);
+                }
+            })
+        }
+        function Delete(i) {
+            $.ajax({
+                url: "/AjaxEmployees/Delete/" + i,
+                type: "JSON",
+                method: "POST",
+
+                success: function (empList) {
+                    console.log(empList)
+                    if (empList.Id > 0) {
+                        loadData();
+                        clearAll()
+                    }
+                },
+                error: function (er) {
+                    console.log(er.responseText);
+                }
+            })
+        }
+        function Update() {
+            $.ajax({
+                url: "/AjaxEmployees/Update",
+                type: "JSON",
+                method: "POST",
+                data: { Name: $("#txtName").val(), Email: $("#Email").val(), Contact: $("#Contact").val(), Address: $("#Address").val(), Id: $("#Id").val() },
+                success: function (empList) {
+                    console.log(empList)
+                    if (empList.Id > 0) {
+                        loadData();
+                        clearAll();
+                    }
+                },
+                error: function (er) {
+                    console.log(er.responseText);
+                }
+            })
+        }
+        function loadData() {
+            $.ajax({
+                url: "/AjaxEmployees/GetAll",
+                type: "JSON",
+                method: "GET",
+                success: function (empList) {
+                    console.log(empList)
+                    if (empList != null) {
+                        $(".tbody").empty();
+                    }
+                    var html = '';
+                    $.each(empList, function (k, v) {
+                        html += '<tr><td>' + v.Name + '</td>';
+                        html += '<td>' + v.Contact + '</td>'
+                        html += '<td>' + v.Email + '</td>'
+                        html += '<td>' + v.Address + '</td>'
+                        html += '<td><button title="Edit"  onClick="Edit(' + v.Id + ')"> <i class="fa fa-pencil"></i></button>||<button title="Delete" onClick="Delete(' + v.Id + ')">   <i class="fa fa-remove"></i></button></td></tr>'
+
+                    })
+                    $(".tbody").append(html); 
+                },
+                error: function (er) {
+                    console.log(er.responseText);
+                }
+            })
+        }
+        </script>}
